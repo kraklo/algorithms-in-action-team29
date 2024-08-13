@@ -5,6 +5,7 @@ export { default as quickSort } from './quickSort';
 export { default as msort_arr_td } from './msort_arr_td';
 export { default as MSDRadixSort } from './MSDRadixSort';
 export { default as straightRadixSort } from './straightRadixSort';
+export { default as msort_lista_td } from './msort_lista_td';
 export { default as transitiveClosure } from './transitiveClosure';
 export { default as prim_old } from './prim_old';
 export { default as prim } from './prim';
