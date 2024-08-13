@@ -75,8 +75,8 @@ const allalgs = {
   'radixSortMSD': {
     name: 'MSD Radix Sort',
     category: 'Sort',
-    explanation: Explanation.MSDRadixSort,
-    param: <Param.RadixSortParam />,
+    explanation: Explanation.MSDRadixSortExp,
+    param: <Param.MSDRadixSortParam />,
     instructions: Instructions.RadixSortInstruction,
     extraInfo: ExtraInfo.MSDRadixSortInfo,
     pseudocode: {
@@ -87,10 +87,10 @@ const allalgs = {
     },
   },
   'radixSortStraight': {
-    name: 'StraightRadixSort',
+    name: 'Straight Radix Sort',
     category: 'Sort',
-    explanation: Explanation.StraightRadixSort,
-    param: <Param.RadixSortParam />,
+    explanation: Explanation.StraightRadixSortExp,
+    param: <Param.StraightRadixSortParam />,
     instructions: Instructions.RadixSortInstruction,
     extraInfo: ExtraInfo.StraightRadixSortInfo,
     pseudocode: {
