@@ -89,6 +89,34 @@ const allalgs = {
       sort: Controller.quickSortM3,
     },
   },
+  'radixSortMSD': {
+    name: 'MSD Radix Sort',
+    category: 'Sort',
+    explanation: Explanation.MSDRadixSortExp,
+    param: <Param.MSDRadixSortParam />,
+    instructions: Instructions.RadixSortInstruction,
+    extraInfo: ExtraInfo.MSDRadixSortInfo,
+    pseudocode: {
+      sort: Pseudocode.MSDRadixSort,
+    },
+    controller: {
+      sort: Controller.MSDRadixSort,
+    },
+  },
+  'radixSortStraight': {
+    name: 'Straight Radix Sort',
+    category: 'Sort',
+    explanation: Explanation.StraightRadixSortExp,
+    param: <Param.StraightRadixSortParam />,
+    instructions: Instructions.RadixSortInstruction,
+    extraInfo: ExtraInfo.StraightRadixSortInfo,
+    pseudocode: {
+      sort: Pseudocode.straightRadixSort,
+    },
+    controller: {
+      sort: Controller.straightRadixSort,
+    },
+  },
   'msort_arr_td': {
     name: 'Merge Sort',
     noDeploy: false,
@@ -139,7 +167,7 @@ const allalgs = {
   'TTFTree': {
     name: '2-3-4 Tree',
     category: 'Insert/Search',
-    param: <Param.TTFTreeParam/>,
+    param: <Param.TTFTreeParam />,
     instructions: Instructions.TTFInstruction,
     explanation: Explanation.TTFExp,
     extraInfo: ExtraInfo.TTFInfo,
@@ -182,10 +210,10 @@ const allalgs = {
     },
   },
   'BFS': {
-    
+
     name: 'Breadth First Search',
     category: 'Graph',
-    param: <Param.BFSParam/>,
+    param: <Param.BFSParam />,
     instructions: Instructions.BFSInstruction,
     explanation: Explanation.BFSExp,
     extraInfo: ExtraInfo.BFSInfo,
@@ -210,8 +238,8 @@ const allalgs = {
       find: Controller.dijkstra,
 
     },
-  }, 
-   'aStar': {
+  },
+  'aStar': {
     name: 'A* (heuristic search)',
     category: 'Graph',
     param: <Param.ASTARParam />,
@@ -225,7 +253,7 @@ const allalgs = {
       find: Controller.AStar,
 
     },
-  }, 
+  },
   'prim': {
     noDeploy: false,
     name: 'Prim\'s (min. spanning tree)',
