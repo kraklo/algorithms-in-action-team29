@@ -117,6 +117,7 @@ export const HSInstruction = sortInstructions;
 export const QSInstruction = sortInstructions;
 export const msort_arr_td = sortInstructions;
 export const RadixSortInstruction = sortInstructions;
+export const msort_lista_td = sortInstructions;
 export const TCInstruction = graphInstructionsTC;
 export const Prims_oldInstruction = graphInstructions;
 export const PrimsInstruction = graphInstructions;

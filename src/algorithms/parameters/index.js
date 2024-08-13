@@ -5,6 +5,7 @@ export { default as QSParam } from './QSParam';
 export { default as msort_arr_td } from './msort_arr_td';
 export { default as MSDRadixSortParam } from './MSDRadixSortParam';
 export { default as StraightRadixSortParam } from './StraightRadixSortParam';
+export { default as msort_lista_td } from './msort_lista_td';
 export { default as Prims_oldParam } from './PRIM_oldParam';
 export { default as PrimsParam } from './PRIMParam';
 export { default as KruskalParam } from './KRUSKALParam';
