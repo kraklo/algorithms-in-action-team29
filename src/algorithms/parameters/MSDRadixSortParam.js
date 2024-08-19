@@ -17,7 +17,7 @@ function MSDRadixSortParam() {
         <>
             <div className="form">
                 <ListParam
-                    name="MSDRadixSort"
+                    name="radixSortMSD"
                     buttonName="Sort"
                     mode="sort"
                     formClassName="formLeft"

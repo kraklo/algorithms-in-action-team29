@@ -17,7 +17,7 @@ function StraightRadixSortParam() {
         <>
             <div className="form">
                 <ListParam
-                    name="straightRadixSort"
+                    name="radixSortStraight"
                     buttonName="Sort"
                     mode="sort"
                     formClassName="formLeft"
