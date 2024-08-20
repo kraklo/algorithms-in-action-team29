@@ -73,7 +73,7 @@ Copy C back to A \\B 10
 \\Code{
 CountNums
 // Count number of 1s and 0s in B \\B 5
-for num in A
+for num in A \\B 13
 \\In{
     bit <- kth bit in num    \\Ref KthBit
     \\Expl{  We use a mask to isolate the kth bit we want to look at
@@ -82,7 +82,7 @@ for num in A
       that the value of the number will be either 0 or 1 depending what
       the significant bit was.
     \\Expl}
-    B[bit] <- B[bit]+1
+    B[bit] <- B[bit]+1 \\B 12
 \\In}
 \\Code}
 
