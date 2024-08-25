@@ -1,7 +1,4 @@
-import { bottomNavigationActionClasses } from '@mui/material';
 import ArrayTracer from '../../components/DataStructures/Array/Array1DTracer';
-import { ALGO_THEME_1 } from '../../components/top/helper';
-import { areExpanded } from './collapseChunkPlugin';
 
 const SRS_BOOKMARKS = {
     radix_sort: 1,
@@ -36,7 +33,14 @@ const unhighlight = (vis, index, isPrimaryColor = true) => {
 // Helper function to determine the number of bits needed
 function getMaximumBit(arr) {
     let max = Math.max(...arr);
-    return Math.floor(Math.log2(max)) + 1;
+    let maxBit = -1;
+
+    while (max > 0) {
+        max = Math.floor(max / 2);
+        maxBit++;
+    }
+
+    return maxBit
 }
 
 export default {
@@ -55,7 +59,9 @@ export default {
      * @param {array} nodes array of numbers needs to be sorted
      */
     run(chunker, { nodes }) {
-      let A = [...nodes]
+      // let A = [...nodes]
+      let A = [5, 3, 8, 6, 2, 7, 4, 1]
+      let n = A.length
 
       chunker.add(SRS_BOOKMARKS.radix_sort,
         (vis, array) => {
@@ -64,35 +70,49 @@ export default {
         [nodes]
       );
 
-
-      function msdRadixSortRecursive(arr, bitPosition) {
-          // Base case: If the array has 1 or fewer elements or bitPosition is less than 0, return the array
-          if (arr.length <= 1 || bitPosition < 0) {
-              return arr;
+      function partition(arr, left, right, mask) {
+        let i = left
+        let j = right
+        while (i <= j) {
+          // Build the left group until it reaches the mask (find the big element)
+          while (i <= right && ((arr[i] >> mask & 1)) === 0) {
+            i++
+          }
+          // Build the right group until it fails the mask (find the small element)
+          while (j >= left && ((arr[j] >> mask & 1)) === 1) {
+            j--
           }
 
-          const zeros = [];
-          const ones = [];
+          console.log(`i: ${i}, j: ${j}`)
+          // Swap if the bigger element is not in the right place
+          if (i < j) {
+            [arr[i], arr[j]] = [arr[j], arr[i]]
+            i++
+            j--
+          }
+        }
+        return i
+      }
 
-          for (let num of arr) {
-              if ((num >> bitPosition) & 1) {
-                  ones.push(num);
-              } else {
-                  zeros.push(num);
-              }
+      function msdRadixSortRecursive(arr, left, right, mask) {
+          // Base case: If the array has 1 or fewer elements or mask is less than 0, stop
+          if (left >= right || mask < 0) {
+              return
           }
 
-          const sortedZeros = msdRadixSortRecursive(zeros, bitPosition - 1);
-          const sortedOnes = msdRadixSortRecursive(ones, bitPosition - 1);
+          const mid = partition(arr, left, right, mask)
 
-          return [...sortedZeros, ...sortedOnes];
+          console.log(`Mid is ${mid}`)
+
+          msdRadixSortRecursive(arr, left, mid - 1, mask - 1)
+          msdRadixSortRecursive(arr, mid, right, mask - 1)
       }
 
 
       console.log(`Array Before: ${A}`);
-      const maxBitLength = getMaximumBit(A);
-      const sortedArray = msdRadixSortRecursive(A, maxBitLength - 1);
-      console.log(`Array After: ${sortedArray}`);
+      const mask = getMaximumBit(A);
+      msdRadixSortRecursive(A, 0, n-1, mask);
+      console.log(`Array After: ${A}`);
 
       return A;
     }
