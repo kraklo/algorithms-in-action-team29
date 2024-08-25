@@ -37,7 +37,7 @@ should be the same for all data in the array segment.
             elements in the array segment or no bits left, do nothing).
     \\Expl}
     \\In{
-        Partition array segment using mask    \\Ref Partition 
+        Partition array segment using mask    \\Ref Partition
         \\Expl{ This is where most of the work of Rexsort gets done.
                 We start with an unordered array segment, and finish
                 with an array segment containing elements with 0 as the
@@ -69,7 +69,7 @@ Rexsort1(A, i, right) \\B 4
 
 \\Code{
 Partition
-Set index i at left the of array segment and j at the right    \\Ref init_iAndj 
+Set index i at left the of array segment and j at the right    \\Ref init_iAndj
 \\Expl{ i scans from left to right stopping at "large" elements
 (with "1" as the mask bit) and j scans from right to left
 stopping at "small" elements (with "0" as the mask bit).
@@ -77,7 +77,7 @@ stopping at "small" elements (with "0" as the mask bit).
 while i < j \\B 6
 \\Expl{ When the indices cross, all the large elements at the left of
         the array segment have been swapped with small elements from the
-        right of the array segment. The coding here can be simplified 
+        right of the array segment. The coding here can be simplified
         if we use "break" or similar to exit from this loop.
 \\Expl}
 \\In{
