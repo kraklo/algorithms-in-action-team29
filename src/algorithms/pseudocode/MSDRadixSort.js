@@ -8,7 +8,7 @@ NOTE that j can start off the RHS of the array.
 
 \\Code{
 Main
-MSDRadixSort(A, n) // Sort array A[1]..A[n] in ascending order.
+MSDRadixSort(A, n) // Sort array A[1]..A[n] in ascending order. \\B 1
 \\In{
     \\Note{ implementation should scan data
     \\Note}
@@ -21,7 +21,7 @@ MSDRadixSort(A, n) // Sort array A[1]..A[n] in ascending order.
       because only small examples are used).
     \\Expl}
 
-    MSDRadixSortRecursive(A, 0, n-1, mask)
+    MSDRadixSortRecursive(A, 0, n-1, mask) \\B 200
     \\Expl{  We need left and right indices because the code is recursive
         and both may be different for recursive calls. For each call, all
         elements in the array segment must have the same pattern
@@ -29,18 +29,18 @@ MSDRadixSort(A, n) // Sort array A[1]..A[n] in ascending order.
     \\Expl}
 \\In}
 //======================================================================
-MSDRadixSortRecursive(A, left, right, mask) // Sort array A[left]..A[right] using bits up to mask  \\B 1
+MSDRadixSortRecursive(A, left, right, mask) // Sort array A[left]..A[right] using bits up to mask
 \\Expl{
 Only the mask bit and smaller bits are used for sorting; higher bits
 should be the same for all data in the array segment.
 \\Expl}
-    if (left < right and mask > 0) \\B 2
+    if (left < right and mask > 0) \\B 300
     \\Expl{ Terminating condition (if there are less than two
             elements in the array segment or no bits left, do nothing).
     \\Expl}
     \\In{
         mid <- Partition(A, left, right, mask)    \\Ref Partition
-        \\Expl{ This is where most of the work of Rexsort gets done.
+        \\Expl{ This is where most of the work of MSDRadixSort gets done.
                 We start with an unordered array segment, and finish
                 with an array segment containing elements with 0 as the
                 mask bit at the left and 1 as the mask bit at the right.
@@ -54,13 +54,13 @@ should be the same for all data in the array segment.
         \\Expl{ Sort elements with 1 mask bit: A[i]..A[right]
         \\Expl}
     \\In}
-    // Done \\B 19
+    // Done \\B 5000
 \\Code}
 
 \\Code{
 MaximumBit
-maxNumber <- max(A) \\B 2
-mask <- 0
+maxNumber <- max(A) \\B 100
+mask <- 0 \\B 150
 while maxNumber > 0
 \\In{
     maxNumber <- maxNumber/2
@@ -70,13 +70,13 @@ while maxNumber > 0
 
 \\Code{
 MSDRadixSortLeft
-// *Recursively* sort first part: \\B 300
+// *Recursively* sort first part: \\B 400
 MSDRadixSortRecursive(A, left, mid-1, mask-1)
 \\Code}
 
 \\Code{
 MSDRadixSortRight
-// *Recursively* sort first part: \\B 300
+// *Recursively* sort first part: \\B 500
 MSDRadixSortRecursive(A, mid, right, mask-1)
 \\Code}
 
@@ -87,7 +87,7 @@ Set index i at left the of array segment and j at the right    \\Ref InitCounter
 (with "1" as the mask bit) and j scans from right to left
 stopping at "small" elements (with "0" as the mask bit).
 \\Expl}
-while i < j \\B 6
+while i < j \\B 303
 \\Expl{ When the indices cross, all the large elements at the left of
         the array segment have been swapped with small elements from the
         right of the array segment. The coding here can be simplified
@@ -104,11 +104,11 @@ while i < j \\B 6
         place. Bitwise "and" between A[i] and mask can be used to
         extract the desired bit.
     \\Expl}
-    if j > i \\B 9
+    if j > i \\B 309
     \\Expl{ If the indices cross, we exit the loop.
     \\Expl}
     \\In{
-        swap(A[i], A[j]) \\B 10
+        swap(A[i], A[j]) \\B 310
         \\Expl{ Swap the larger element (A[i]) with the smaller
                 element (A[j]).
         \\Expl}
@@ -118,7 +118,7 @@ while i < j \\B 6
 
 \\Code{
 PartitionLeft
-while (i <= right && ((arr[i] >> mask & 1)) === 0) {
+while (i <= right && ((arr[i] >> mask & 1)) === 0) { \\B 304
   \\In{
     i++
   \\In}
@@ -128,7 +128,7 @@ while (i <= right && ((arr[i] >> mask & 1)) === 0) {
 
 \\Code{
 PartitionRight
-while (j >= left && ((arr[j] >> mask & 1)) === 1) {
+while (j >= left && ((arr[j] >> mask & 1)) === 1) { \\B 305
   \\In{
     j--
   \\In}
@@ -137,10 +137,10 @@ while (j >= left && ((arr[j] >> mask & 1)) === 1) {
 
 \\Code{
 InitCounters
-i <- left \\B 11
+i <- left \\B 301
 \\Expl{ The i pointer scans left to right, so it is set to left
 \\Expl}
-j <- right \\B 12
+j <- right \\B 302
 \\Expl{ The j pointer scans right to left, so it is set to right
 \\Expl}
 \\Code}
