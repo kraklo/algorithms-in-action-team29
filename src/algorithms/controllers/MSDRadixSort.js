@@ -88,17 +88,17 @@ export default {
           }
         }
 
-        msdRadixSortRecursive(arr, left, i - 1, mask - 1)
-        msdRadixSortRecursive(arr, i, right, mask - 1)
+        return i
+
       }
 
       function msdRadixSortRecursive(arr, left, right, mask) {
           // Base case: If the array has 1 or fewer elements or mask is less than 0, stop
-          if (left >= right || mask < 0) {
-              return
+          if (left < right && mask > 0) {
+            const mid = partition(arr, left, right, mask)
+            msdRadixSortRecursive(arr, left, mid - 1, mask - 1)
+            msdRadixSortRecursive(arr, mid, right, mask - 1)
           }
-
-          partition(arr, left, right, mask)
       }
 
 
