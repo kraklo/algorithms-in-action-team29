@@ -33,24 +33,10 @@ const unhighlight = (vis, index, isPrimaryColor = true) => {
     }
 };
 
-const bitAtIndex = (num, index) => {
-    return (num & (1 << index)) >> index;
-};
-
-const getMaximumBit = (A) => {
-    let maxNumber = Math.max(...A)
-    let maxBit = -1;
-    while (maxNumber > 0) {
-        maxNumber = Math.floor(maxNumber / 2);
-        maxBit++;
-    }
-    return maxBit
-}
-
-const swap = (array, i, j) => {
-  const temp = array[i]
-  array[i] = array[j]
-  array[j] = temp
+// Helper function to determine the number of bits needed
+function getMaximumBit(arr) {
+    let max = Math.max(...arr);
+    return Math.floor(Math.log2(max)) + 1;
 }
 
 export default {
@@ -69,42 +55,7 @@ export default {
      * @param {array} nodes array of numbers needs to be sorted
      */
     run(chunker, { nodes }) {
-      // let A = [...nodes]
-      let A = [5, 3, 8, 6, 2, 7, 4, 1]
-      let n = A.length
-      const mask = getMaximumBit(A)
-
-      const msdRadixSortRecursive = (A, left, right, mask) => {
-        console.log(`MSD Radix Sort Recursive ${left} ${right} ${mask}`)
-        // If there are less than two elements in the array segment, or no bits left, do nothing
-        if (left < right && mask > 0) {
-          // Set index i to the left of the array segment and j at the right
-          let i = left
-          let j = right
-          while (i < j) {
-            while(bitAtIndex(A[i], mask) == 0 && i < j) {
-              console.log(`A[i] is ${A[i]}, Bit At Index is ${bitAtIndex(A[i], mask)}`)
-              i++
-            }
-            while(bitAtIndex(A[j], mask) == 1 && j > i) {
-              console.log(`A[j] is ${A[j]}, Bit At Index is ${bitAtIndex(A[j], mask)}`)
-              j--
-            }
-            break;
-          }
-
-          console.log(`i: ${i}, j: ${j}`)
-          // while (i < j) {
-          //   // repeatedly increment i until i >= j or A[i] has the mask bit
-          //   // repeatedly decrement j until j <= i or A[j] has 0 as the mask bit
-          //   if (j > i) {
-          //     swap(A, i, j)
-          //   }
-          // }
-        }
-      }
-
-      msdRadixSortRecursive(A, 0, n-1, mask)
+      let A = [...nodes]
 
       chunker.add(SRS_BOOKMARKS.radix_sort,
         (vis, array) => {
@@ -112,6 +63,36 @@ export default {
         },
         [nodes]
       );
+
+
+      function msdRadixSortRecursive(arr, bitPosition) {
+          // Base case: If the array has 1 or fewer elements or bitPosition is less than 0, return the array
+          if (arr.length <= 1 || bitPosition < 0) {
+              return arr;
+          }
+
+          const zeros = [];
+          const ones = [];
+
+          for (let num of arr) {
+              if ((num >> bitPosition) & 1) {
+                  ones.push(num);
+              } else {
+                  zeros.push(num);
+              }
+          }
+
+          const sortedZeros = msdRadixSortRecursive(zeros, bitPosition - 1);
+          const sortedOnes = msdRadixSortRecursive(ones, bitPosition - 1);
+
+          return [...sortedZeros, ...sortedOnes];
+      }
+
+
+      console.log(`Array Before: ${A}`);
+      const maxBitLength = getMaximumBit(A);
+      const sortedArray = msdRadixSortRecursive(A, maxBitLength - 1);
+      console.log(`Array After: ${sortedArray}`);
 
       return A;
     }
