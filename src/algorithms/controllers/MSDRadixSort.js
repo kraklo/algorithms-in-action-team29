@@ -59,8 +59,7 @@ export default {
      * @param {array} nodes array of numbers needs to be sorted
      */
     run(chunker, { nodes }) {
-      // let A = [...nodes]
-      let A = [5, 3, 8, 6, 2, 7, 4, 1]
+      let A = [...nodes]
       let n = A.length
 
       chunker.add(SRS_BOOKMARKS.radix_sort,
@@ -83,15 +82,14 @@ export default {
             j--
           }
 
-          console.log(`i: ${i}, j: ${j}`)
           // Swap if the bigger element is not in the right place
-          if (i < j) {
+          if (j > i) {
             [arr[i], arr[j]] = [arr[j], arr[i]]
-            i++
-            j--
           }
         }
-        return i
+
+        msdRadixSortRecursive(arr, left, i - 1, mask - 1)
+        msdRadixSortRecursive(arr, i, right, mask - 1)
       }
 
       function msdRadixSortRecursive(arr, left, right, mask) {
@@ -100,12 +98,7 @@ export default {
               return
           }
 
-          const mid = partition(arr, left, right, mask)
-
-          console.log(`Mid is ${mid}`)
-
-          msdRadixSortRecursive(arr, left, mid - 1, mask - 1)
-          msdRadixSortRecursive(arr, mid, right, mask - 1)
+          partition(arr, left, right, mask)
       }
 
 
