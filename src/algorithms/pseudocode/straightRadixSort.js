@@ -1,33 +1,45 @@
 import parse from '../../pseudocode/parse';
 
 export default parse(`
-\\Note{ REAL specification of radix exchange sort
-Modified quicksort code: will need extra bookmarks for top level plus
-NOTE that j can start off the RHS of the array.
+\\Note{ REAL specification of straight radix sort
+
+
+
+XXXXXXXXXXXXXXXXXXXX Notes from Lee XXXXXXXXXXXXXXXXXXXXXXXXX
+
+I've had a pass over this. A few details I've removed one bit added plus
+changed "bits" to digits - best use radix 4 for now at least (though
+writing the code so we can change the radix very easily would be a
+good idea).  See also Notes in the code.  I've not changed the bookmarks
+so (hopefully) I've not broken anything in the current animation code.
+
+Also (not done here). Best rename the temporary data and count
+arrays. Array B for the temporary array would be fine.  Array C or Counts
+would be good for the counts array.
 \\Note}
 
 \\Code{
 Main
 Radixsort(A, n) // Sort array A[1]..A[n] in ascending order. \\B 1
 
-    Find maximum bit used    \\Ref MaximumBit
-    \\Expl{  maxBit is the most significant position in which we see a "1" in
-      the binary representation of the numbers. We used this as a threshold
-      to stop iteratively sorting the array.
-      This can be determined from the word size used to represent
-      the data or by scanning through the data (we do the latter here
-      because only small examples are used).
+    Find maximum number of "digits" used in the data
+    \\Expl{  This depends on the radix (base) we use to view the data.
+      We could use radix 10 (decimal digits), radix 2
+      (binary) or anything else.  Here we use radix 4 for illustration
+      (the digits are 0-3 and use two bits). Radix 256 (one byte) is a
+      better choice in practice and we can set the maximum to be the
+      word size rather than scanning all the input data as we do here.
     \\Expl}
 
-    for each bit up to maximum bit    \\Ref RSFor
-    \\Expl{  We stop at the maximum bit so that we do not waste time
-      looking at bits that we know will be 0.
+    for each digit k up to maximum digit number
+    \\Expl{  We scan the digits right to left, from least significant to
+      most significant.
     \\Expl}
     \\In{
         Countingsort(A, k, n)    \\Ref Countingsort
         \\Expl{  Straight Radix Sort uses Counting Sort to stably sort the
-          array treating each bit of the number as the number in Counting
-          Sort.
+          array, treating each digit value of the original data as a key in
+          Counting Sort.
         \\Expl}
     \\In}
 
@@ -36,6 +48,8 @@ Radixsort(A, n) // Sort array A[1]..A[n] in ascending order. \\B 1
 
 \\Code{
 MaximumBit
+\\Note{ Skip this
+\\Note}
 maxNumber <- max(A) \\B 2
 maxBit <- 0
 while maxNumber > 0
@@ -47,82 +61,105 @@ while maxNumber > 0
 
 \\Code{
 RSFor
-for i <- 0 to maxBit \\B 3
+\\Note{ Skip this
+\\Note}
+for k <- 0 to maxDigit \\B 3
 \\Code}
 
 \\Code{
 Countingsort
 // Countingsort(A, k, n) \\B 4
 Count number of 1s and 0s in B    \\Ref CountNums
-\\Expl{  We count the number of 1s and 0s as these are the only two
-  digits we are concerned with in each iteration of counting sort.
+Array B <- counts or each kth digit value   \\Ref CountNums
+\\Expl{  We count the number of occurrences of each digit value (0-3
+  here) in the kth digits of the data.
 \\Expl}
-Cumulatively sum counts    \\Ref CumSum
-\\Expl{  Counting sort requires us to add the previous count to each
-  successive count so that we know the correct place to put each element
-  in the final array.
+Cumulatively sum digit value counts    \\Ref CumSum
+\\Expl{ For each digit value, we compute the count for that digit value
+  plus all smaller digit values. This allows us to determine where the
+  last occurrence of each digit value will appear in the sorted array.
 \\Expl}
-Populate new array C with sorted numbers    \\Ref Populate
-\\Expl{  We place each element in the count-1 spot of the new array as
-  this is the correct placement for each element sorted in respect to
-  the current significant bit.
+Populate temporary array C with sorted numbers    \\Ref Populate
+\\Expl{  We copy the data to temporary array C, using the digit
+  value counts to determine where each element is copied to.
 \\Expl}
 Copy C back to A \\B 10
+\\Expl{ Array A is now sorted on digit k and all smaller digits
+  (because the smaller digits were sorted previously and counting
+  sort is stable).
+\\Expl}
 \\Code}
 
 \\Code{
 CountNums
-// Count number of 1s and 0s in B \\B 5
+// Put counts of each kth digit value in array B \\B 5
+initialise array B to all zeros
 for num in A
 \\In{
-    bit <- kth bit in num    \\Ref KthBit
-    \\Expl{  We use a mask to isolate the kth bit we want to look at
-      (as a bitwise and operation with a 1 bit-shifted left k times 
-      isolates that digit), and then bit-shift that right k times so
-      that the value of the number will be either 0 or 1 depending what
-      the significant bit was.
+    digit <- kth digit value in num
+    \\Expl{ To extract the kth digit we can use div and mod operations.
+      If the radix is a power of two we can use bit-wise operations
+      (right shift and bit-wise and) instead.
     \\Expl}
-    B[bit] <- B[bit]+1
+    \\Note{ It would be nice to highlight the (decimal) number plus
+      somewhere display it in binary with the two relevant bits
+      highlighted, and the digit value 0-3 (maybe the latter can be done
+      by just highlighting B[digit] instead).
+    \\Note}
+    B[digit] <- B[digit]+1
 \\In}
 \\Code}
 
 \\Code{
 KthBit
+\\Note{ Skip this
+\\Note}
 bit <- (num & (1 << i)) >> i
 \\Code}
 
 \\Code{
 CumSum
 // Cumulatively sum counts \\B 6
-B[1] = B[0] + B[1]
+\\Note{ Best remove this comment line and move bookmark
+\\Note}
+for i = 1 to maximum digit value
+\\Expl{ We must scan left to right. The count for digit 0 remains
+  unchanged.
+\\Expl}
+\\In{
+    B[i] = B[i-1] + B[i]
+\\In}
 \\Code}
 
 \\Code{
 Populate
 // Populate new array C with sorted numbers \\B 7
-for each num in A in reverse order    \\Ref PopFor
-\\Expl{  We go in reverse order so that we preserve the order of each number.
+for each num in A in reverse order
+\\Expl{  We go from right to left so that we preserve the order of numbers
+  with the same digit.
   This is CRUCIAL in radix sort as the counting sort MUST be stable.
 \\Expl}
 \\In{
-    bit <- kth bit in num    \\Ref KthBit
-    \\Expl{  We use a mask to isolate the kth bit we want to look at
-      (as a bitwise and operation with a 1 bit-shifted left k times 
-      isolates that digit), and then bit-shift that right k times so
-      that the value of the number will be either 0 or 1 depending what
-      the significant bit was.
+    digit <- kth digit value in num    \\Ref KthBit
+    \\Expl{ To extract the kth digit value we can use div and mod operations.
+      If the radix is a power of two we can use bit-wise operations
+      (right shift and bit-wise and) instead.
     \\Expl}
-    B[bit] = B[bit]-1
-    C[B[bit]] = num \\B 9
+    \\Note{ It would be nice to highlight the (decimal) number plus
+      somewhere display it in binary with the two relevant bits
+      highlighted, and the digit value 0-3 (maybe the latter can be done
+      by just highlighting B[digit] instead).
+    \\Note}
+    B[digit] = B[digit]-1
+    C[B[digit]] = num \\B 9
 \\In}
 \\Code}
 
 \\Code{
 PopFor
+\\Note{ Skip this?
+\\Note}
 for j <- n-1 downto 0 \\B 8
-\\In{
-    num <- A[j]
-\\In}
 \\Code}
 
 `);
