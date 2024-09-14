@@ -247,13 +247,13 @@ export default {
 
         if (!isPartitionExpanded()) { return stack_vis; }
 
-        if (cur_i >= 0 && cur_i < n) {
-          stack_vis[cur_depth][cur_i].extra.push(STACK_FRAME_COLOR.I_color);
-        }
+        // if (cur_i >= 0 && cur_i < n) {
+        //   stack_vis[cur_depth][cur_i].extra.push(STACK_FRAME_COLOR.I_color);
+        // }
 
-        if (cur_j >= 0 && cur_j < n) {
-          stack_vis[cur_depth][cur_j].extra.push(STACK_FRAME_COLOR.J_color);
-        }
+        // if (cur_j >= 0 && cur_j < n) {
+        //   stack_vis[cur_depth][cur_j].extra.push(STACK_FRAME_COLOR.J_color);
+        // }
 
         return stack_vis;
       }
