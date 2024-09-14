@@ -15,18 +15,20 @@ class MaskRenderer extends Renderer {
   }
 
   renderData() {
-    const { binaryData, maskData, maxBits } = this.props.data
+    const { binaryData, maskData, maxBits, highlight } = this.props.data
     return (
       <div className={styles.container}>
         <BinaryRenderer
           header={"Binary Rep"}
           data={binaryData}
           maxBits={maxBits}
+          highlight={highlight}
         />
         <BinaryRenderer
           header={"Mask"}
           data={maskData}
           maxBits={maxBits}
+          highlight={highlight}
         />
       </div>
     );

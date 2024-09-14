@@ -22,8 +22,9 @@ class MaskTracer extends Tracer {
     this.binaryData = data
   }
 
-  setMask(data) {
-    this.maskData = data
+  setMask(maskDecimal, maskIndex) {
+    this.maskData = maskDecimal
+    this.highlight = maskIndex
   }
 }
 

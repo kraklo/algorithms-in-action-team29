@@ -86,7 +86,7 @@ const unhighlight = (vis, index, isPrimaryColor = true) => {
 };
 
 const updateMask = (vis, value) => {
-  vis.mask.setMask(2 ** value)
+  vis.mask.setMask(2 ** value, value)
 }
 
 const updateBinary = (vis, value) => {
@@ -274,6 +274,7 @@ export default {
         // Partition helper functions
         // ----------------------------------------------------------------------------------------------------------------------------
         // The main helper function that acts as an  interface into refreshStack
+        // This function is the only way information is cached and incremented properly in the while loop
         const partitionChunker = (bookmark, f, args_array) => {
           assert(bookmark !== undefined); // helps catch bugs early, and trace them in stack
           if (args_array === undefined) {
