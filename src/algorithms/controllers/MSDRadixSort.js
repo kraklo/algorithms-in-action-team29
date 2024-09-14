@@ -1,4 +1,5 @@
 import ArrayTracer from '../../components/DataStructures/Array/Array1DTracer';
+import MaskTracer from '../../components/DataStructures/Mask/MaskTracer'
 import {
   areExpanded,
 } from './collapseChunkPlugin';
@@ -84,6 +85,14 @@ const unhighlight = (vis, index, isPrimaryColor = true) => {
     }
 };
 
+const updateMask = (vis, value) => {
+  vis.mask.setMask(2 ** value)
+}
+
+const updateBinary = (vis, value) => {
+  vis.mask.setBinary(value)
+}
+
 // Helper function to determine the number of bits needed
 const getMaximumBit = (arr) => {
     let max = Math.max(...arr);
@@ -100,9 +109,13 @@ const getMaximumBit = (arr) => {
 export default {
     initVisualisers() {
         return {
+            mask: {
+              instance: new MaskTracer('mask', null, 'Mask'),
+              order: 0,
+            },
             array: {
-                instance: new ArrayTracer('array', null, 'Array view', { arrayItemMagnitudes: true }), // Label the input array as array view
-                order: 0,
+              instance: new ArrayTracer('array', null, 'Array view', { arrayItemMagnitudes: true }), // Label the input array as array view
+              order: 1,
             },
         }
     },
@@ -284,13 +297,9 @@ export default {
           // Build the left group until it reaches the mask (find the big element)
           chunker.add(MSD_BOOKMARKS.partition_left)
           while (i <= right && ((arr[i] >> mask & 1)) === 0) {
-            // Update the position of i on the array
-            // console.log(i)
-            // chunker.add(MSD_BOOKMARKS.partition_left,
-            //     (vis) => {
-            //       console.log('Assigning i  to ', i)
-            //       assignVar(vis, 'i', i)
-            //   }, [i])
+            chunker.add(MSD_BOOKMARKS.partition_left, (vis) => {
+              updateBinary(vis, arr[i])
+            }, [arr, i])
             i++
             partitionChunker(MSD_BOOKMARKS.partition_left, refreshStack)
           }
@@ -298,13 +307,15 @@ export default {
           // Build the right group until it fails the mask (find the small element)
           while (j >= left && ((arr[j] >> mask & 1)) === 1) {
             // Update the position of j on the array
+            chunker.add(MSD_BOOKMARKS.partition_right, (vis) => {
+              updateBinary(vis, arr[j])
+            }, [arr, j])
             j--
             partitionChunker(MSD_BOOKMARKS.partition_right, refreshStack)
           }
 
           // Swap if the bigger element is not in the right place
           if (j > i) {
-            // [arr[i], arr[j]] = [arr[j], arr[i]]
             swapAction(MSD_BOOKMARKS.swap, i, j)
           }
         }
@@ -322,6 +333,7 @@ export default {
             assignVariable(vis, VIS_VARIABLE_STRINGS.left, left);
           if (right >= 0)
             assignVariable(vis, VIS_VARIABLE_STRINGS.right, right);
+          updateMask(vis, mask)
         }, [left, right])
         if (left < right && mask >= 0) {
           const mid = partition(arr, left, right, mask)
@@ -341,17 +353,19 @@ export default {
       )
 
       const maxIndex = A.indexOf(Math.max(...A))
+      const mask = getMaximumBit(A);
       // Highlight the index
       chunker.add(MSD_BOOKMARKS.get_mask,
           (vis, maxIndex) => {
             highlight(vis, maxIndex);
+            vis.mask.setMaxBits(mask + 1)
+            updateMask(vis, mask)
           },
-          [maxIndex]
+          [maxIndex, mask]
       )
       chunker.add(MSD_BOOKMARKS.first_pass)
-
-      const mask = getMaximumBit(A);
       msdRadixSortRecursive(A, 0, n-1, mask, 0);
+
 
       chunker.add(MSD_BOOKMARKS.done,
           vis => {

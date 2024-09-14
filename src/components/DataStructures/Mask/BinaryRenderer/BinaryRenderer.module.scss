@@ -1,0 +1,25 @@
+@import "../../common/stylesheet/index";
+
+.container {
+    flex-direction: column;
+}
+
+.outline {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 75px;
+    min-width: 150px;
+    border: 1px solid;
+    font-size: 28px;
+    color: var(--mid-header-font);
+    background: var(--array-2d-row-col-bg);
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.title {
+    font-size: 18px;
+    color: var(--mid-header-font);
+    text-align: center;
+}
