@@ -19,7 +19,8 @@ const VIS_VARIABLE_STRINGS = {
   j_right_index: 'j',
   i_eq_0: 'i==0',
   j_eq_0: 'j==0',
-  pivot: 'pivot',
+  left: 'left',
+  right: 'right'
 };
 
 const MSD_BOOKMARKS = {
@@ -64,7 +65,7 @@ const isPartitionExpanded = () => {
 }
 
 const isRecursionExpanded = () => {
-  return areExpanded(['QuicksortFirst']) || areExpanded(['QuicksortSecond']);
+  return areExpanded(['MSDRadixSortLeft']) || areExpanded(['MSDRadixSortRight']);
 }
 
 const highlight = (vis, index, isPrimaryColor = true) => {
@@ -96,13 +97,6 @@ const getMaximumBit = (arr) => {
     return maxBit
 }
 
-const assignVar = (vis, variableName, index) => {
-  if (index === undefined)
-    vis.array.removeVariable(variableName)
-  else
-    vis.array.assignVariable(variableName, index)
-}
-
 export default {
     initVisualisers() {
         return {
@@ -121,8 +115,6 @@ export default {
     run(chunker, { nodes }) {
       let A = [...nodes]
       let n = A.length
-      console.log('start')
-
 
       // ----------------------------------------------------------------------------------------------------------------------------
       // Define 'global' variables
@@ -137,7 +129,7 @@ export default {
       // Define helper functions
       // ----------------------------------------------------------------------------------------------------------------------------
 
-      const refresh_stack = (vis, cur_real_stack, cur_finished_stack_frames, cur_i, cur_j, cur_pivot_index, cur_depth) => {
+      const refreshStack = (vis, cur_real_stack, cur_finished_stack_frames, cur_i, cur_j, cur_depth) => {
         // XXX
         // We can't render the -1 index in the array
         // For now we display i==0/j==0 at left of array if appropriate
@@ -173,18 +165,17 @@ export default {
 
         vis.array.setStackDepth(cur_real_stack.length);
         vis.array.setStack(
-          derive_stack(cur_real_stack, cur_finished_stack_frames, cur_i, cur_j, cur_pivot_index, cur_depth)
+          deriveStack(cur_real_stack, cur_finished_stack_frames, cur_i, cur_j, cur_depth)
         );
 
-        assign_i_j(vis, VIS_VARIABLE_STRINGS.i_left_index, cur_i);
-        assign_i_j(vis, VIS_VARIABLE_STRINGS.i_eq_0, cur_i_too_low);
-        assign_i_j(vis, VIS_VARIABLE_STRINGS.pivot, cur_pivot_index);
-        assign_i_j(vis, VIS_VARIABLE_STRINGS.j_right_index, cur_j);
-        assign_i_j(vis, VIS_VARIABLE_STRINGS.j_eq_0, cur_j_too_low);
+        assignVariable(vis, VIS_VARIABLE_STRINGS.i_left_index, cur_i);
+        assignVariable(vis, VIS_VARIABLE_STRINGS.i_eq_0, cur_i_too_low);
+        assignVariable(vis, VIS_VARIABLE_STRINGS.j_right_index, cur_j);
+        assignVariable(vis, VIS_VARIABLE_STRINGS.j_eq_0, cur_j_too_low);
       };
 
 
-      function derive_stack(cur_real_stack, cur_finished_stack_frames, cur_i, cur_j, cur_pivot_index, cur_depth) {
+      function deriveStack(cur_real_stack, cur_finished_stack_frames, cur_i, cur_j, cur_depth) {
         // return 2D array stack_vis containing color values corresponding to stack frame states and indexes in those stack frames
         // for visualise this data
 
@@ -228,10 +219,6 @@ export default {
           return stack_vis;
         }
 
-        if (cur_pivot_index !== undefined) {
-          stack_vis[cur_depth][cur_pivot_index].extra.push(STACK_FRAME_COLOR.P_color);
-        }
-
         if (!isPartitionExpanded()) { return stack_vis; }
 
         if (cur_i !== undefined) {
@@ -245,7 +232,7 @@ export default {
         return stack_vis;
       }
 
-      const assign_i_j = (vis, variable_name, index) => {
+      const assignVariable = (vis, variable_name, index) => {
         if (index === undefined) { vis.array.removeVariable(variable_name); return; }
         vis.array.assignVariable(variable_name, index);
       }
@@ -254,56 +241,71 @@ export default {
 
 
 
-
-
       // ----------------------------------------------------------------------------------------------------------------------------
       // Real code goes here
       // ----------------------------------------------------------------------------------------------------------------------------
-      const partition = (arr, left, right, mask) => {
+      const partition = (arr, left, right, mask, depth) => {
         let i = left
         let j = right
-        chunker.add(MSD_BOOKMARKS.set_i,
-          (vis) => {
-            assignVar(vis, 'left', left)
-            assignVar(vis, 'i', left)
-          }, [A, left])
-        chunker.add(MSD_BOOKMARKS.set_j,
-          (vis) => {
-            assignVar(vis, 'right', right)
-            assignVar(vis, 'j', right)
-          }, [A, right])
+
+        // ----------------------------------------------------------------------------------------------------------------------------
+        // Partition helper functions
+        // ----------------------------------------------------------------------------------------------------------------------------
+        // The main helper function that acts as an  interface into refreshStack
+        function partitionChunker(bookmark, f, args_array) {
+          assert(bookmark !== undefined); // helps catch bugs early, and trace them in stack
+          if (args_array === undefined) {
+            args_array = [real_stack, finished_stack_frames, i, j, left, right, depth]
+          }
+          chunker.add(bookmark, f, args_array, depth)
+        }
+
+        function swapAction(bookmark, n1, n2) {
+          assert(bookmark !== undefined);
+          assert(n1 !== undefined);
+          assert(n2 !== undefined);
+
+          [arr[n1], arr[n2]] = [arr[n2], arr[n1]]
+
+          chunker.add(bookmark,
+            (vis, _n1, _n2, cur_real_stack, cur_finished_stack_frames, cur_i, cur_j, cur_depth) => {
+
+              vis.array.swapElements(_n1, _n2);
+              refreshStack(vis, cur_real_stack, cur_finished_stack_frames, cur_i, cur_j, cur_depth)
+            },
+            [n1, n2, real_stack, finished_stack_frames, i, j, depth],
+          depth);
+        }
+
+
+        partitionChunker(MSD_BOOKMARKS.set_i, refreshStack)
+        partitionChunker(MSD_BOOKMARKS.set_j, refreshStack)
         while (i <= j) {
           // Build the left group until it reaches the mask (find the big element)
+          chunker.add(MSD_BOOKMARKS.partition_left)
           while (i <= right && ((arr[i] >> mask & 1)) === 0) {
             // Update the position of i on the array
-            console.log(i)
+            // console.log(i)
             // chunker.add(MSD_BOOKMARKS.partition_left,
             //     (vis) => {
             //       console.log('Assigning i  to ', i)
             //       assignVar(vis, 'i', i)
             //   }, [i])
             i++
+            partitionChunker(MSD_BOOKMARKS.partition_left, refreshStack)
           }
+          chunker.add(MSD_BOOKMARKS.partition_right)
           // Build the right group until it fails the mask (find the small element)
           while (j >= left && ((arr[j] >> mask & 1)) === 1) {
             // Update the position of j on the array
             j--
-            // chunker.add(MSD_BOOKMARKS.partition_right,
-            //     (vis) => {
-            //       assignVar(vis, 'j', j)
-            //   }, [j])
+            partitionChunker(MSD_BOOKMARKS.partition_right, refreshStack)
           }
 
           // Swap if the bigger element is not in the right place
           if (j > i) {
-            [arr[i], arr[j]] = [arr[j], arr[i]]
-            chunker.add(MSD_BOOKMARKS.swap,
-              (vis, array) => {
-                  vis.array.set(array, 'MSDRadixSort')
-                  vis.array.swapElements(i, j)
-              },
-              [A, i, j]
-            )
+            // [arr[i], arr[j]] = [arr[j], arr[i]]
+            swapAction(MSD_BOOKMARKS.swap, i, j)
           }
         }
 
@@ -311,25 +313,22 @@ export default {
 
       }
 
-      const msdRadixSortRecursive = (arr, left, right, mask) => {
+      const msdRadixSortRecursive = (arr, left, right, mask, depth) => {
+        real_stack.push([left, right, depth]);
+        max_depth_index = Math.max(max_depth_index, depth);
         // Base case: If the array has 1 or fewer elements or mask is less than 0, stop
-        chunker.add(MSD_BOOKMARKS.base_case)
+        chunker.add(MSD_BOOKMARKS.base_case, (vis) => {
+          if (left < n)
+            assignVariable(vis, VIS_VARIABLE_STRINGS.left, left);
+          if (right >= 0)
+            assignVariable(vis, VIS_VARIABLE_STRINGS.right, right);
+        }, [left, right])
         if (left < right && mask >= 0) {
           const mid = partition(arr, left, right, mask)
-          chunker.add(MSD_BOOKMARKS.sort_left,
-            (vis, array) => {
-                vis.array.set(array, 'MSDRadixSort')
-            },
-            [A]
-          )
-          msdRadixSortRecursive(arr, left, mid - 1, mask - 1)
-          chunker.add(MSD_BOOKMARKS.sort_right,
-            (vis, array) => {
-                vis.array.set(array, 'MSDRadixSort')
-            },
-            [A]
-          )
-          msdRadixSortRecursive(arr, mid, right, mask - 1)
+          chunker.add(MSD_BOOKMARKS.sort_left)
+          msdRadixSortRecursive(arr, left, mid - 1, mask - 1, depth + 1)
+          chunker.add(MSD_BOOKMARKS.sort_right)
+          msdRadixSortRecursive(arr, mid, right, mask - 1, depth + 1)
         }
       }
 
@@ -352,7 +351,7 @@ export default {
       chunker.add(MSD_BOOKMARKS.first_pass)
 
       const mask = getMaximumBit(A);
-      msdRadixSortRecursive(A, 0, n-1, mask);
+      msdRadixSortRecursive(A, 0, n-1, mask, 0);
 
       chunker.add(MSD_BOOKMARKS.done,
           vis => {
