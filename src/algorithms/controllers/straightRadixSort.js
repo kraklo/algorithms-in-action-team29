@@ -15,6 +15,8 @@ const SRS_BOOKMARKS = {
     insert_into_array: 9,
     copy: 10,
     done: 11,
+    add_to_count: 12,
+    add_count_for_loop: 13,
 };
 
 const highlight = (vis, index, isPrimaryColor = true) => {
@@ -59,13 +61,30 @@ export default {
         const countingSort = (A, k, n, bits) => {
             const count = Array.apply(null, Array(1 << bits)).map(() => 0);
 
-            A.forEach(num => {
+            for (let i = 0; i < n; i++) {
+                chunker.add(SRS_BOOKMARKS.count_nums);
                 const bit = bitsAtIndex(num, k, bits);
-                console.log(k + " " + bit + " " + num);
                 count[bit]++;
-            });
+              
 
-            chunker.add(SRS_BOOKMARKS.count_nums);
+                chunker.add(SRS_BOOKMARKS.add_to_count,
+                    (vis, i) => {
+                        if (i !== 0) {
+                            unhighlight(vis, i - 1);
+                        }
+
+                        highlight(vis, i);
+                    },
+                    [i]
+                );
+
+                chunker.add(SRS_BOOKMARKS.add_count_for_loop,
+                    (vis, i) => {
+                        unhighlight(vis, i);
+                    },
+                    [i]
+                );
+            }
 
             for (let i = 1; i < n; i++) {
                 count[i] += count[i - 1];
@@ -125,8 +144,13 @@ export default {
             bits *= 2;
         }
 
+
         for (let k = 0; k <= bits / BITS; k++) {
-            // chunker.add(SRS_BOOKMARKS.counting_sort_for_loop);
+            chunker.add(SRS_BOOKMARKS.counting_sort_for_loop,
+                vis => {
+                    unhighlight(vis, maxIndex);
+                }
+            );
 
             A = countingSort(A, k, n, BITS);
 

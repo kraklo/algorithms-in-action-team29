@@ -94,7 +94,7 @@ Copy C back to A \\B 10
 CountNums
 // Put counts of each kth digit value in array B \\B 5
 initialise array B to all zeros
-for num in A
+for num in A \\B 13
 \\In{
     digit <- kth digit value in num
     \\Expl{ To extract the kth digit we can use div and mod operations.
@@ -106,7 +106,7 @@ for num in A
       highlighted, and the digit value 0-3 (maybe the latter can be done
       by just highlighting B[digit] instead).
     \\Note}
-    B[digit] <- B[digit]+1
+    B[digit] <- B[digit]+1 \\B 12
 \\In}
 \\Code}
 
