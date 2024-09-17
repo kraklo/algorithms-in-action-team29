@@ -31,7 +31,7 @@ Radixsort(A, n) // Sort array A[1]..A[n] in ascending order. \\B 1
       word size rather than scanning all the input data as we do here.
     \\Expl}
 
-    for each digit k up to maximum digit number
+    for each digit k up to maximum digit number \\B 3
     \\Expl{  We scan the digits right to left, from least significant to
       most significant.
     \\Expl}

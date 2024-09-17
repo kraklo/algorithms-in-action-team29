@@ -6,7 +6,7 @@ const BITS = 2;
 const SRS_BOOKMARKS = {
     radix_sort: 1,
     // max_number: 2,
-    // counting_sort_for_loop: 3,
+    counting_sort_for_loop: 3,
     counting_sort: 4,
     count_nums: 5,
     cumulative_sum: 6,
@@ -63,9 +63,9 @@ export default {
 
             for (let i = 0; i < n; i++) {
                 chunker.add(SRS_BOOKMARKS.count_nums);
-                const bit = bitsAtIndex(num, k, bits);
+                const bit = bitsAtIndex(A[i], k, bits);
                 count[bit]++;
-              
+
 
                 chunker.add(SRS_BOOKMARKS.add_to_count,
                     (vis, i) => {
