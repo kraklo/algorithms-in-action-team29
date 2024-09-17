@@ -1,11 +1,12 @@
 import ArrayTracer from '../../components/DataStructures/Array/Array1DTracer';
+import MaskTracer from '../../components/DataStructures/Mask/MaskTracer';
 import { areExpanded } from './collapseChunkPlugin';
 
 const BITS = 2;
 
 const SRS_BOOKMARKS = {
     radix_sort: 1,
-    // max_number: 2,
+    max_number: 2,
     counting_sort_for_loop: 3,
     counting_sort: 4,
     count_nums: 5,
@@ -35,6 +36,25 @@ const unhighlight = (vis, index, isPrimaryColor = true) => {
     }
 };
 
+const updateMask = (vis, index, bits) => {
+    const mask = ((1 << bits) - 1) << (index * bits);
+    const indexes = [];
+
+    for (let i = 0; i < vis.mask.maxBits; i++) {
+        if (bitsAtIndex(mask, i, 1) == 1) {
+            indexes.push(i);
+        }
+    }
+
+    console.log(indexes);
+
+    vis.mask.setMask(mask, indexes);
+}
+
+const updateBinary = (vis, value) => {
+    vis.mask.setBinary(value);
+}
+
 const bitsAtIndex = (num, index, bits) => {
     return (num & (((1 << bits) - 1) << (index * bits))) >> (index * bits);
 };
@@ -42,9 +62,13 @@ const bitsAtIndex = (num, index, bits) => {
 export default {
     initVisualisers() {
         return {
+            mask: {
+                instance: new MaskTracer('mask', null, 'Mask'),
+                order: 0,
+            },
             array: {
                 instance: new ArrayTracer('array', null, 'Array view', { arrayItemMagnitudes: true }), // Label the input array as array view
-                order: 0,
+                order: 1,
             },
         }
     },
@@ -60,30 +84,26 @@ export default {
 
         const countingSort = (A, k, n, bits) => {
             const count = Array.apply(null, Array(1 << bits)).map(() => 0);
+            chunker.add(SRS_BOOKMARKS.count_nums);
 
             for (let i = 0; i < n; i++) {
-                chunker.add(SRS_BOOKMARKS.count_nums);
                 const bit = bitsAtIndex(A[i], k, bits);
                 count[bit]++;
 
 
-                chunker.add(SRS_BOOKMARKS.add_to_count,
+                chunker.add(SRS_BOOKMARKS.add_count_for_loop,
                     (vis, i) => {
                         if (i !== 0) {
                             unhighlight(vis, i - 1);
                         }
 
                         highlight(vis, i);
+                        updateBinary(vis, A[i]);
                     },
                     [i]
                 );
 
-                chunker.add(SRS_BOOKMARKS.add_count_for_loop,
-                    (vis, i) => {
-                        unhighlight(vis, i);
-                    },
-                    [i]
-                );
+                chunker.add(SRS_BOOKMARKS.add_to_count);
             }
 
             for (let i = 1; i < n; i++) {
@@ -131,24 +151,23 @@ export default {
             maxBit++;
         }
 
-        // chunker.add(SRS_BOOKMARKS.max_number,
-        //     (vis, maxIndex) => {
-        //         highlight(vis, maxIndex);
-        //     },
-        //     [maxIndex]
-        // );
-
         let bits = 1;
 
         while (bits < maxBit) {
             bits *= 2;
         }
 
+        chunker.add(SRS_BOOKMARKS.max_number,
+            (vis, bits) => {
+                vis.mask.setMaxBits(bits);
+            },
+            [bits]
+        );
 
-        for (let k = 0; k <= bits / BITS; k++) {
+        for (let k = 0; k < bits / BITS; k++) {
             chunker.add(SRS_BOOKMARKS.counting_sort_for_loop,
                 vis => {
-                    unhighlight(vis, maxIndex);
+                    updateMask(vis, k, BITS);
                 }
             );
 

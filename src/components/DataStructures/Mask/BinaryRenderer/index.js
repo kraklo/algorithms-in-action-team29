@@ -12,14 +12,14 @@ const BinaryRenderer = ({ header, data, maxBits, highlight }) => {
       // If index is on highlight, return a highlighted span, else just
       // return a normal span. Need to adjust the index as the string
       // starts at 0, but the 0th position is the last bit
-      const adjustedIndex = binaryString.length - index - 1
+      const adjustedIndex = binaryString.length - index - 1;
       return (
-        <span key={index} className={adjustedIndex == highlight ? styles.highlighted : ""}>
-        {bit}
-      </span>
-      )
-    })
-  }, [data, maxBits, highlight])
+        <span key={index} className={highlight.includes(adjustedIndex) ? styles.highlighted : ""}>
+          {bit}
+        </span>
+      );
+    });
+  }, [data, maxBits, highlight]);
 
   return (
     <div className={styles.container}>
@@ -37,7 +37,7 @@ BinaryRenderer.propTypes = ({
   header: PropTypes.string.isRequired,
   data: PropTypes.number.isRequired,
   maxBits: PropTypes.number,
-  highlight: PropTypes.number,
-})
+  highlight: PropTypes.object,
+});
 
 export default BinaryRenderer;
