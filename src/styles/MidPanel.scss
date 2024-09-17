@@ -9,13 +9,13 @@ $midTitleFontSize: 0.89em;
   flex-direction: column;
   height: 100%;
 
-  
+
   .midPanelHeader {
     height: $midHeaderHeight;
     background-color: var(--mid-header-bg);
     display: flex;
     align-items: center;
-    
+
     .algorithmTitle {
       font-size: $midTitleFontSize;
       margin: auto $midOffset;
@@ -39,4 +39,3 @@ $midTitleFontSize: 0.89em;
 
 
 }
-
