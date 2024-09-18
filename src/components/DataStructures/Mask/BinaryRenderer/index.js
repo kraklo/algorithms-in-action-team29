@@ -37,7 +37,7 @@ BinaryRenderer.propTypes = ({
   header: PropTypes.string.isRequired,
   data: PropTypes.number.isRequired,
   maxBits: PropTypes.number,
-  highlight: PropTypes.object,
+  highlight: PropTypes.array,
 });
 
 export default BinaryRenderer;

@@ -18,21 +18,23 @@ const SRS_BOOKMARKS = {
     done: 11,
     add_to_count: 12,
     add_count_for_loop: 13,
+    cum_sum_for_loop: 14,
+    add_cum_sum: 15,
 };
 
-const highlight = (vis, index, isPrimaryColor = true) => {
+const highlight = (array, index, isPrimaryColor = true) => {
     if (isPrimaryColor) {
-        vis.array.select(index);
+        array.select(index);
     } else {
-        vis.array.patch(index);
+        array.patch(index);
     }
 };
 
-const unhighlight = (vis, index, isPrimaryColor = true) => {
+const unhighlight = (array, index, isPrimaryColor = true) => {
     if (isPrimaryColor) {
-        vis.array.deselect(index);
+        array.deselect(index);
     } else {
-        vis.array.depatch(index);
+        array.depatch(index);
     }
 };
 
@@ -46,17 +48,19 @@ const updateMask = (vis, index, bits) => {
         }
     }
 
-    console.log(indexes);
-
     vis.mask.setMask(mask, indexes);
-}
+};
 
 const updateBinary = (vis, value) => {
     vis.mask.setBinary(value);
-}
+};
 
 const bitsAtIndex = (num, index, bits) => {
     return (num & (((1 << bits) - 1) << (index * bits))) >> (index * bits);
+};
+
+const setArray = (visArray, array) => {
+    visArray.set(array, 'straightRadixSort');
 };
 
 export default {
@@ -67,8 +71,16 @@ export default {
                 order: 0,
             },
             array: {
-                instance: new ArrayTracer('array', null, 'Array view', { arrayItemMagnitudes: true }), // Label the input array as array view
+                instance: new ArrayTracer('array', null, 'Array view', { arrayItemMagnitudes: true }),
                 order: 1,
+            },
+            countArray: {
+                instance: new ArrayTracer('array', null, 'Count array', { arrayItemMagnitudes: false }),
+                order: 2,
+            },
+            tempArray: {
+                instance: new ArrayTracer('array', null, 'Temp array', { arrayItemMagnitudes: false }),
+                order: 3,
             },
         }
     },
@@ -84,66 +96,118 @@ export default {
 
         const countingSort = (A, k, n, bits) => {
             const count = Array.apply(null, Array(1 << bits)).map(() => 0);
+            let lastBit = -1;
+
             chunker.add(SRS_BOOKMARKS.count_nums);
 
             for (let i = 0; i < n; i++) {
+                chunker.add(SRS_BOOKMARKS.add_count_for_loop,
+                    (vis, i, lastBit) => {
+                        if (i !== 0) {
+                            unhighlight(vis.array, i - 1);
+                        }
+
+                        if (lastBit !== -1) {
+                            unhighlight(vis.countArray, lastBit);
+                        }
+
+                        highlight(vis.array, i);
+                        updateBinary(vis, A[i]);
+                    },
+                    [i, lastBit]
+                );
+
                 const bit = bitsAtIndex(A[i], k, bits);
                 count[bit]++;
 
+                chunker.add(SRS_BOOKMARKS.add_to_count,
+                    (vis, count) => {
+                        setArray(vis.countArray, count);
+                        highlight(vis.countArray, bit);
+                    },
+                    [count]
+                );
 
-                chunker.add(SRS_BOOKMARKS.add_count_for_loop,
+                lastBit = bit;
+            }
+
+            chunker.add(SRS_BOOKMARKS.cumulative_sum,
+                (vis, n, lastBit) => {
+                    unhighlight(vis.array, n - 1);
+                    unhighlight(vis.countArray, lastBit);
+                },
+                [n, lastBit]
+            );
+
+            for (let i = 1; i < count.length; i++) {
+                chunker.add(SRS_BOOKMARKS.cum_sum_for_loop,
                     (vis, i) => {
-                        if (i !== 0) {
-                            unhighlight(vis, i - 1);
+                        if (i === 1) {
+                            highlight(vis.countArray, 0);
                         }
-
-                        highlight(vis, i);
-                        updateBinary(vis, A[i]);
                     },
                     [i]
                 );
 
-                chunker.add(SRS_BOOKMARKS.add_to_count);
-            }
-
-            for (let i = 1; i < n; i++) {
                 count[i] += count[i - 1];
+
+                chunker.add(SRS_BOOKMARKS.add_cum_sum,
+                    (vis, count, i) => {
+                        setArray(vis.countArray, count);
+                        highlight(vis.countArray, i);
+                    },
+                    [count, i]
+                )
             }
 
-            chunker.add(SRS_BOOKMARKS.cumulative_sum);
+            const sortedA = Array.apply(null, Array(n)).map(() => 0);
 
-            const sorted_A = Array.apply(null, Array(n)).map(() => 0);
-
-            chunker.add(SRS_BOOKMARKS.populate_array);
+            chunker.add(SRS_BOOKMARKS.populate_array,
+                (vis, countLength) => {
+                    unhighlight(vis.countArray, countLength - 1);
+                },
+                [count.length]
+            );
             // chunker.add(SRS_BOOKMARKS.populate_for_loop);
+            let bit;
 
             for (let i = n - 1; i >= 0; i--) {
                 const num = A[i];
-                const bit = bitsAtIndex(num, k, bits);
+                bit = bitsAtIndex(num, k, bits);
                 count[bit]--;
-                sorted_A[count[bit]] = num;
-                chunker.add(SRS_BOOKMARKS.insert_into_array);
+                sortedA[count[bit]] = num;
+                chunker.add(SRS_BOOKMARKS.insert_into_array,
+                    (vis, num, i, bit, count, sortedA) => {
+                        if (i !== n - 1) {
+                            unhighlight(vis.array, i + 1);
+                        }
+
+                        setArray(vis.countArray, count);
+                        setArray(vis.tempArray, sortedA);
+
+                        updateBinary(vis, num);
+                        highlight(vis.array, i);
+                        highlight(vis.countArray, bit);
+                        highlight(vis.tempArray, count[bit]);
+                    },
+                    [num, i, bit, count, sortedA]
+                );
             }
 
             chunker.add(SRS_BOOKMARKS.copy,
-                (vis, array) => {
-                    vis.array.set(array, 'straightRadixSort');
+                (vis, array, n, bit) => {
+                    setArray(vis.array, array);
+                    setArray(vis.tempArray, Array.apply(null, Array(n)).map(() => 0));
+
+                    unhighlight(vis.countArray, bit);
                 },
-                [sorted_A]
+                [sortedA, n, bit]
             );
 
-            return sorted_A;
+            return sortedA;
         };
 
-        chunker.add(SRS_BOOKMARKS.radix_sort,
-            (vis, array) => {
-                vis.array.set(array, 'straightRadixSort');
-            },
-            [nodes]
-        );
-
         let maxNumber = Math.max(...A);
-        const maxIndex = A.indexOf(maxNumber);
         let maxBit = -1;
 
         while (maxNumber > 0) {
@@ -156,6 +220,15 @@ export default {
         while (bits < maxBit) {
             bits *= 2;
         }
+
+        chunker.add(SRS_BOOKMARKS.radix_sort,
+            (vis, array) => {
+                setArray(vis.array, array);
+                setArray(vis.countArray, Array.apply(null, Array(1 << BITS)).map(() => 0));
+                setArray(vis.tempArray, Array.apply(null, Array(n)).map(() => 0));
+            },
+            [nodes]
+        );
 
         chunker.add(SRS_BOOKMARKS.max_number,
             (vis, bits) => {

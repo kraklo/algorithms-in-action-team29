@@ -95,12 +95,12 @@ CumSum
 // Cumulatively sum counts \\B 6
 \\Note{ Best remove this comment line and move bookmark
 \\Note}
-for i = 1 to maximum digit value
+for i = 1 to maximum digit value \\B 14
 \\Expl{ We must scan left to right. The count for digit 0 remains
   unchanged.
 \\Expl}
 \\In{
-    B[i] = B[i-1] + B[i]
+    B[i] = B[i-1] + B[i] \\B 15
 \\In}
 \\Code}
 
