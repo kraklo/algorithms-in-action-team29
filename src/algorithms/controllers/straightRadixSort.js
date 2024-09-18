@@ -12,7 +12,7 @@ const SRS_BOOKMARKS = {
     count_nums: 5,
     cumulative_sum: 6,
     populate_array: 7,
-    // populate_for_loop: 8,
+    populate_for_loop: 8,
     insert_into_array: 9,
     copy: 10,
     done: 11,
@@ -20,6 +20,10 @@ const SRS_BOOKMARKS = {
     add_count_for_loop: 13,
     cum_sum_for_loop: 14,
     add_cum_sum: 15,
+};
+
+const isCountExpanded = () => {
+    return areExpanded(["Countingsort"]);
 };
 
 const highlight = (array, index, isPrimaryColor = true) => {
@@ -64,26 +68,7 @@ const setArray = (visArray, array) => {
 };
 
 export default {
-    initVisualisers() {
-        return {
-            mask: {
-                instance: new MaskTracer('mask', null, 'Mask'),
-                order: 0,
-            },
-            array: {
-                instance: new ArrayTracer('array', null, 'Array view', { arrayItemMagnitudes: true }),
-                order: 1,
-            },
-            countArray: {
-                instance: new ArrayTracer('array', null, 'Count array', { arrayItemMagnitudes: false }),
-                order: 2,
-            },
-            tempArray: {
-                instance: new ArrayTracer('array', null, 'Temp array', { arrayItemMagnitudes: false }),
-                order: 3,
-            },
-        }
-    },
+    initVisualisers,
 
     /**
      *
@@ -107,7 +92,7 @@ export default {
                             unhighlight(vis.array, i - 1);
                         }
 
-                        if (lastBit !== -1) {
+                        if (lastBit !== -1 && isCountExpanded()) {
                             unhighlight(vis.countArray, lastBit);
                         }
 
@@ -122,8 +107,10 @@ export default {
 
                 chunker.add(SRS_BOOKMARKS.add_to_count,
                     (vis, count) => {
-                        setArray(vis.countArray, count);
-                        highlight(vis.countArray, bit);
+                        if (isCountExpanded()) {
+                            setArray(vis.countArray, count);
+                            highlight(vis.countArray, bit);
+                        }
                     },
                     [count]
                 );
@@ -134,7 +121,10 @@ export default {
             chunker.add(SRS_BOOKMARKS.cumulative_sum,
                 (vis, n, lastBit) => {
                     unhighlight(vis.array, n - 1);
-                    unhighlight(vis.countArray, lastBit);
+
+                    if (isCountExpanded()) {
+                        unhighlight(vis.countArray, lastBit);
+                    }
                 },
                 [n, lastBit]
             );
@@ -142,7 +132,7 @@ export default {
             for (let i = 1; i < count.length; i++) {
                 chunker.add(SRS_BOOKMARKS.cum_sum_for_loop,
                     (vis, i) => {
-                        if (i === 1) {
+                        if (i === 1 && isCountExpanded()) {
                             highlight(vis.countArray, 0);
                         }
                     },
@@ -153,8 +143,10 @@ export default {
 
                 chunker.add(SRS_BOOKMARKS.add_cum_sum,
                     (vis, count, i) => {
-                        setArray(vis.countArray, count);
-                        highlight(vis.countArray, i);
+                        if (isCountExpanded()) {
+                            setArray(vis.countArray, count);
+                            highlight(vis.countArray, i);
+                        }
                     },
                     [count, i]
                 )
@@ -164,11 +156,15 @@ export default {
 
             chunker.add(SRS_BOOKMARKS.populate_array,
                 (vis, countLength) => {
-                    unhighlight(vis.countArray, countLength - 1);
+                    if (isCountExpanded()) {
+                        unhighlight(vis.countArray, countLength - 1);
+                    }
                 },
                 [count.length]
             );
-            // chunker.add(SRS_BOOKMARKS.populate_for_loop);
+
+            chunker.add(SRS_BOOKMARKS.populate_for_loop);
+
             let bit;
 
             for (let i = n - 1; i >= 0; i--) {
@@ -182,26 +178,30 @@ export default {
                             unhighlight(vis.array, i + 1);
                         }
 
-                        setArray(vis.countArray, count);
-                        setArray(vis.tempArray, sortedA);
+                        if (isCountExpanded()) {
+                            setArray(vis.countArray, count);
+                            setArray(vis.tempArray, sortedA);
+                            highlight(vis.countArray, bit);
+                            highlight(vis.tempArray, count[bit]);
+                        }
 
                         updateBinary(vis, num);
                         highlight(vis.array, i);
-                        highlight(vis.countArray, bit);
-                        highlight(vis.tempArray, count[bit]);
                     },
                     [num, i, bit, count, sortedA]
                 );
             }
 
             chunker.add(SRS_BOOKMARKS.copy,
-                (vis, array, n, bit) => {
+                (vis, array, n, countLength) => {
                     setArray(vis.array, array);
-                    setArray(vis.tempArray, Array.apply(null, Array(n)).map(() => 0));
 
-                    unhighlight(vis.countArray, bit);
+                    if (isCountExpanded()) {
+                        setArray(vis.tempArray, Array.apply(null, Array(n)).map(() => undefined));
+                        setArray(vis.countArray, Array.apply(null, Array(countLength)).map(() => undefined));
+                    }
                 },
-                [sortedA, n, bit]
+                [sortedA, n, count.length]
             );
 
             return sortedA;
@@ -224,8 +224,11 @@ export default {
         chunker.add(SRS_BOOKMARKS.radix_sort,
             (vis, array) => {
                 setArray(vis.array, array);
-                setArray(vis.countArray, Array.apply(null, Array(1 << BITS)).map(() => 0));
-                setArray(vis.tempArray, Array.apply(null, Array(n)).map(() => 0));
+
+                if (isCountExpanded()) {
+                    setArray(vis.countArray, Array.apply(null, Array(1 << BITS)).map(() => undefined));
+                    setArray(vis.tempArray, Array.apply(null, Array(n)).map(() => undefined));
+                }
             },
             [nodes]
         );
@@ -260,3 +263,38 @@ export default {
         return A;
     }
 };
+
+
+export function initVisualisers() {
+    if (isCountExpanded()) {
+        return {
+            mask: {
+                instance: new MaskTracer('mask', null, 'Mask'),
+                order: 0,
+            },
+            array: {
+                instance: new ArrayTracer('array', null, 'Array view', { arrayItemMagnitudes: true }),
+                order: 1,
+            },
+            countArray: {
+                instance: new ArrayTracer('countArray', null, 'Count array', { arrayItemMagnitudes: false }),
+                order: 1,
+            },
+            tempArray: {
+                instance: new ArrayTracer('tempArray', null, 'Temp array', { arrayItemMagnitudes: false }),
+                order: 1,
+            },
+        };
+    } else {
+        return {
+            mask: {
+                instance: new MaskTracer('mask', null, 'Mask'),
+                order: 0,
+            },
+            array: {
+                instance: new ArrayTracer('array', null, 'Array view', { arrayItemMagnitudes: true }),
+                order: 1,
+            },
+        };
+    }
+}

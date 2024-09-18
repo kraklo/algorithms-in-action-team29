@@ -107,7 +107,7 @@ for i = 1 to maximum digit value \\B 14
 \\Code{
 Populate
 // Populate new array C with sorted numbers \\B 7
-for each num in A in reverse order
+for each num in A in reverse order \\B 8
 \\Expl{  We go from right to left so that we preserve the order of numbers
   with the same digit.
   This is CRUCIAL in radix sort as the counting sort MUST be stable.
