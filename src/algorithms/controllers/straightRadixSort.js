@@ -60,7 +60,7 @@ const updateBinary = (vis, value) => {
 };
 
 const bitsAtIndex = (num, index, bits) => {
-    return (num & (((1 << bits) - 1) << (index * bits))) >> (index * bits);
+    return num >> (index * bits) & ((1 << bits) - 1);
 };
 
 const setArray = (visArray, array) => {
@@ -273,7 +273,7 @@ export function initVisualisers() {
                 order: 0,
             },
             array: {
-                instance: new ArrayTracer('array', null, 'Array view', { arrayItemMagnitudes: true }),
+                instance: new ArrayTracer('array', null, 'Array view', { arrayItemMagnitudes: false }),
                 order: 1,
             },
             countArray: {
