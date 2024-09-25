@@ -1,21 +1,21 @@
-import React from 'react'
-import Renderer from '../../common/Renderer'
-import styles from './MaskRenderer.module.scss'
-import BinaryRenderer from '../BinaryRenderer'
+import React from 'react';
+import Renderer from '../../common/Renderer';
+import styles from './MaskRenderer.module.scss';
+import BinaryRenderer from '../BinaryRenderer';
 
 class MaskRenderer extends Renderer {
   constructor(props) {
     super(props)
-    this.centerX = 0
-    this.centerY = 0
-    this.zoom = 100
-    this.elementRef = React.createRef()
-    this.togglePan(true)
-    this.toggleZoom(true)
+    this.centerX = 0;
+    this.centerY = 0;
+    this.zoom = 100;
+    this.elementRef = React.createRef();
+    this.togglePan(true);
+    this.toggleZoom(true);
   }
 
   renderData() {
-    const { binaryData, maskData, maxBits, highlight } = this.props.data
+    const { binaryData, maskData, maxBits, highlight } = this.props.data;
     return (
       <div className={styles.container}>
         <BinaryRenderer
@@ -35,4 +35,4 @@ class MaskRenderer extends Renderer {
   }
 }
 
-export default MaskRenderer
+export default MaskRenderer;
