@@ -20,6 +20,10 @@ const SRS_BOOKMARKS = {
     add_count_for_loop: 13,
     cum_sum_for_loop: 14,
     add_cum_sum: 15,
+    initialise_zero: 16,
+    highlight_digit: 17,
+    subtract_count: 18,
+    highlight_digit_count: 19,
 };
 
 const isCountExpanded = () => {
@@ -85,8 +89,17 @@ export default {
 
             chunker.add(SRS_BOOKMARKS.count_nums);
 
+            chunker.add(SRS_BOOKMARKS.initialise_zero,
+                (vis, count) => {
+                    setArray(vis.countArray, count);
+                },
+                [count]
+            );
+
             for (let i = 0; i < n; i++) {
-                chunker.add(SRS_BOOKMARKS.add_count_for_loop,
+                chunker.add(SRS_BOOKMARKS.add_count_for_loop);
+
+                chunker.add(SRS_BOOKMARKS.highlight_digit,
                     (vis, i, lastBit) => {
                         if (i !== 0) {
                             unhighlight(vis.array, i - 1);
@@ -132,8 +145,12 @@ export default {
             for (let i = 1; i < count.length; i++) {
                 chunker.add(SRS_BOOKMARKS.cum_sum_for_loop,
                     (vis, i) => {
-                        if (i === 1 && isCountExpanded()) {
-                            highlight(vis.countArray, 0);
+                        if (isCountExpanded()) {
+                            if (i !== 1) {
+                                unhighlight(vis.countArray, i - 1);
+                            }
+
+                            highlight(vis.countArray, i);
                         }
                     },
                     [i]
@@ -172,23 +189,37 @@ export default {
                 bit = bitsAtIndex(num, k, bits);
                 count[bit]--;
                 sortedA[count[bit]] = num;
-                chunker.add(SRS_BOOKMARKS.insert_into_array,
-                    (vis, num, i, bit, count, sortedA) => {
+
+                chunker.add(SRS_BOOKMARKS.highlight_digit_count,
+                    (vis, num, i) => {
                         if (i !== n - 1) {
                             unhighlight(vis.array, i + 1);
-                        }
-
-                        if (isCountExpanded()) {
-                            setArray(vis.countArray, count);
-                            setArray(vis.tempArray, sortedA);
-                            highlight(vis.countArray, bit);
-                            highlight(vis.tempArray, count[bit]);
                         }
 
                         updateBinary(vis, num);
                         highlight(vis.array, i);
                     },
-                    [num, i, bit, count, sortedA]
+                    [num, i]
+                );
+
+                chunker.add(SRS_BOOKMARKS.subtract_count,
+                    (vis, count, bit) => {
+                        if (isCountExpanded()) {
+                            setArray(vis.countArray, count);
+                            highlight(vis.countArray, bit);
+                        }
+                    },
+                    [count, bit]
+                );
+
+                chunker.add(SRS_BOOKMARKS.insert_into_array,
+                    (vis, bit, count, sortedA) => {
+                        if (isCountExpanded()) {
+                            setArray(vis.tempArray, sortedA);
+                            highlight(vis.tempArray, count[bit]);
+                        }
+                    },
+                    [bit, count, sortedA]
                 );
             }
 
@@ -273,15 +304,15 @@ export function initVisualisers() {
                 order: 0,
             },
             array: {
-                instance: new ArrayTracer('array', null, 'Array view', { arrayItemMagnitudes: false }),
+                instance: new ArrayTracer('array', null, 'Array A', { arrayItemMagnitudes: false }),
                 order: 1,
             },
             countArray: {
-                instance: new ArrayTracer('countArray', null, 'Count array', { arrayItemMagnitudes: false }),
+                instance: new ArrayTracer('countArray', null, 'Count array C', { arrayItemMagnitudes: false }),
                 order: 1,
             },
             tempArray: {
-                instance: new ArrayTracer('tempArray', null, 'Temp array', { arrayItemMagnitudes: false }),
+                instance: new ArrayTracer('tempArray', null, 'Temp array B', { arrayItemMagnitudes: false }),
                 order: 1,
             },
         };
