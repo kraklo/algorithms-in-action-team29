@@ -11,8 +11,8 @@ const importsThis = ['quickSort', 'quickSortM3', 'msort_arr_td',
 
 // eslint-disable-next-line import/no-cycle
 // See also accompanying mods/hooks in src/context/GlobalState.js and
-// src/context/actions.js 
-import { GlobalActions } from '../../context/actions';
+// src/context/actions.js
+// import { GlobalActions } from '../../context/actions';
 
 // not sure if finding the running algorithm needs such complex code, but this
 // seems to work...
