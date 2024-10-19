@@ -58,13 +58,13 @@ should be the same for all data in the array segment.
 \\Code{
 MSDRadixSortLeft
 // *Recursively* sort first part: \\B 400
-RexsortRecursive(A, left, i-1, mask-1)
+RexsortRecursive(A, left, i-1, mask-1) \\B 401
 \\Code}
 
 \\Code{
 MSDRadixSortRight
 // *Recursively* sort first part: \\B 500
-RexsortRecursive(A, i, right, mask-1)
+RexsortRecursive(A, i, right, mask-1) \\B 501
 \\Code}
 
 \\Code{
