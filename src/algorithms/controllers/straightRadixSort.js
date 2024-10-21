@@ -67,8 +67,12 @@ const bitsAtIndex = (num, index, bits) => {
     return num >> (index * bits) & ((1 << bits) - 1);
 };
 
-const setArray = (visArray, array) => {
-    visArray.set(array, 'straightRadixSort');
+const setArray = (visArray, array, isCountArray = false) => {
+    if (!isCountArray) {
+        visArray.set(array, 'straightRadixSort');
+    } else {
+        visArray.set(array, 'countArray');
+    }
 };
 
 export default {
@@ -93,7 +97,7 @@ export default {
             chunker.add(SRS_BOOKMARKS.initialise_zero,
                 (vis, count) => {
                     if (isCountExpanded()) {
-                        setArray(vis.countArray, count);
+                        setArray(vis.countArray, count, true);
                     }
                 },
                 [count]
@@ -124,7 +128,7 @@ export default {
                 chunker.add(SRS_BOOKMARKS.add_to_count,
                     (vis, count, bit) => {
                         if (isCountExpanded()) {
-                            setArray(vis.countArray, count);
+                            setArray(vis.countArray, count, true);
                             highlight(vis.countArray, bit);
                         }
                     },
@@ -164,7 +168,7 @@ export default {
                 chunker.add(SRS_BOOKMARKS.add_cum_sum,
                     (vis, count, i) => {
                         if (isCountExpanded()) {
-                            setArray(vis.countArray, count);
+                            setArray(vis.countArray, count, true);
                             highlight(vis.countArray, i);
                         }
                     },
@@ -209,7 +213,7 @@ export default {
                 chunker.add(SRS_BOOKMARKS.subtract_count,
                     (vis, count, bit) => {
                         if (isCountExpanded()) {
-                            setArray(vis.countArray, count);
+                            setArray(vis.countArray, count, true);
                             highlight(vis.countArray, bit);
                         }
                     },
@@ -235,7 +239,7 @@ export default {
 
                     if (isCountExpanded()) {
                         setArray(vis.tempArray, Array.apply(null, Array(n)).map(() => undefined));
-                        setArray(vis.countArray, Array.apply(null, Array(countLength)).map(() => undefined));
+                        setArray(vis.countArray, Array.apply(null, Array(countLength)).map(() => undefined), true);
                     }
                 },
                 [sortedA, n, count.length]
@@ -263,7 +267,7 @@ export default {
                 setArray(vis.array, array);
 
                 if (isCountExpanded()) {
-                    setArray(vis.countArray, Array.apply(null, Array(1 << BITS)).map(() => undefined));
+                    setArray(vis.countArray, Array.apply(null, Array(1 << BITS)).map(() => undefined), true);
                     setArray(vis.tempArray, Array.apply(null, Array(n)).map(() => undefined));
                 }
             },
