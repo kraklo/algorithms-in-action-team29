@@ -54,7 +54,6 @@ export function areExpanded(blocks) {
 export function onCollapseChange(chunker) {
   const algorithm = getGlobalAlgorithm();
   const alg_name = algorithm.id.name;
-  console.log(alg_name);
   if (!importsThis.includes(alg_name)) return;
   chunker.refresh();
 }

@@ -85,13 +85,16 @@ export default {
 
         const countingSort = (A, k, n, bits) => {
             const count = Array.apply(null, Array(1 << bits)).map(() => 0);
+            const A_copy = [...A];
             let lastBit = -1;
 
             chunker.add(SRS_BOOKMARKS.count_nums);
 
             chunker.add(SRS_BOOKMARKS.initialise_zero,
                 (vis, count) => {
-                    setArray(vis.countArray, count);
+                    if (isCountExpanded()) {
+                        setArray(vis.countArray, count);
+                    }
                 },
                 [count]
             );
@@ -119,13 +122,13 @@ export default {
                 count[bit]++;
 
                 chunker.add(SRS_BOOKMARKS.add_to_count,
-                    (vis, count) => {
+                    (vis, count, bit) => {
                         if (isCountExpanded()) {
                             setArray(vis.countArray, count);
                             highlight(vis.countArray, bit);
                         }
                     },
-                    [count]
+                    [count, bit]
                 );
 
                 lastBit = bit;
@@ -169,7 +172,7 @@ export default {
                 )
             }
 
-            const sortedA = Array.apply(null, Array(n)).map(() => 0);
+            const sortedA = Array.apply(null, Array(n)).map(() => undefined);
 
             chunker.add(SRS_BOOKMARKS.populate_array,
                 (vis, countLength) => {
@@ -186,6 +189,7 @@ export default {
 
             for (let i = n - 1; i >= 0; i--) {
                 const num = A[i];
+                A_copy[i] = undefined;
                 bit = bitsAtIndex(num, k, bits);
                 count[bit]--;
                 sortedA[count[bit]] = num;
@@ -213,13 +217,15 @@ export default {
                 );
 
                 chunker.add(SRS_BOOKMARKS.insert_into_array,
-                    (vis, bit, count, sortedA) => {
+                    (vis, bit, count, sortedA, A_copy) => {
                         if (isCountExpanded()) {
                             setArray(vis.tempArray, sortedA);
                             highlight(vis.tempArray, count[bit]);
                         }
+
+                        setArray(vis.array, A_copy);
                     },
-                    [bit, count, sortedA]
+                    [bit, count, sortedA, A_copy]
                 );
             }
 
@@ -323,7 +329,7 @@ export function initVisualisers() {
                 order: 0,
             },
             array: {
-                instance: new ArrayTracer('array', null, 'Array view', { arrayItemMagnitudes: true }),
+                instance: new ArrayTracer('array', null, 'Array A', { arrayItemMagnitudes: true }),
                 order: 1,
             },
         };
