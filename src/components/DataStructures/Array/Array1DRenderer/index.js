@@ -150,8 +150,17 @@ class Array1DRenderer extends Array2DRenderer {
                 style={{ display: 'flex', justifyContent: 'space-between' }}
               >
                 {longestRow.map((_, i) => {
-                  // if the graph instance is heapsort, then the array index starts from 1
-                  if (algo !== "straightRadixSort") {
+                  // if the graph instance is not straight radix sort then start from index 1
+                  // this is because straight radix sort uses counting sort which relies on indexes starting from 0
+                  // countArray also requires indexes to be shown in binary
+                  if (algo === 'countArray') {
+                    i = i.toString(2);
+                    const maxLength = longestRow.length.toString(2).length;
+
+                    if (i.length < maxLength) {
+                      i = i.padStart(maxLength - i.length, '0');
+                    }
+                  } else if (algo !== 'straightRadixSort') {
                     i += 1;
                   }
 

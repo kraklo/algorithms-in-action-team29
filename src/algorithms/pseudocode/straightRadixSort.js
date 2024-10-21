@@ -73,10 +73,10 @@ Copy B back to A \\B 10
 \\Code{
 CountNums
 // Put counts of each kth digit value in array C \\B 5
-initialise array C to all zeros
+initialise array C to all zeros \\B 16
 for num in A \\B 13
 \\In{
-    digit <- kth digit value in num
+    digit <- kth digit value in num \\B 17
     \\Expl{ To extract the kth digit we can use div and mod operations.
       If the radix is a power of two we can use bit-wise operations
       (right shift and bit-wise and) instead.
@@ -113,7 +113,7 @@ for each num in A in reverse order \\B 8
   This is CRUCIAL in radix sort as the counting sort MUST be stable.
 \\Expl}
 \\In{
-    digit <- kth digit value in num
+    digit <- kth digit value in num \\B 19
     \\Expl{ To extract the kth digit value we can use div and mod operations.
       If the radix is a power of two we can use bit-wise operations
       (right shift and bit-wise and) instead.
@@ -123,7 +123,7 @@ for each num in A in reverse order \\B 8
       highlighted, and the digit value 0-3 (maybe the latter can be done
       by just highlighting B[digit] instead).
     \\Note}
-    B[digit] = B[digit]-1
+    B[digit] = B[digit]-1 \\B 18
     C[B[digit]] = num \\B 9
 \\In}
 \\Code}

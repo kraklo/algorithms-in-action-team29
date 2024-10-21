@@ -20,6 +20,10 @@ const SRS_BOOKMARKS = {
     add_count_for_loop: 13,
     cum_sum_for_loop: 14,
     add_cum_sum: 15,
+    initialise_zero: 16,
+    highlight_digit: 17,
+    subtract_count: 18,
+    highlight_digit_count: 19,
 };
 
 const isCountExpanded = () => {
@@ -63,8 +67,12 @@ const bitsAtIndex = (num, index, bits) => {
     return num >> (index * bits) & ((1 << bits) - 1);
 };
 
-const setArray = (visArray, array) => {
-    visArray.set(array, 'straightRadixSort');
+const setArray = (visArray, array, isCountArray = false) => {
+    if (!isCountArray) {
+        visArray.set(array, 'straightRadixSort');
+    } else {
+        visArray.set(array, 'countArray');
+    }
 };
 
 export default {
@@ -81,12 +89,24 @@ export default {
 
         const countingSort = (A, k, n, bits) => {
             const count = Array.apply(null, Array(1 << bits)).map(() => 0);
+            const A_copy = [...A];
             let lastBit = -1;
 
             chunker.add(SRS_BOOKMARKS.count_nums);
 
+            chunker.add(SRS_BOOKMARKS.initialise_zero,
+                (vis, count) => {
+                    if (isCountExpanded()) {
+                        setArray(vis.countArray, count, true);
+                    }
+                },
+                [count]
+            );
+
             for (let i = 0; i < n; i++) {
-                chunker.add(SRS_BOOKMARKS.add_count_for_loop,
+                chunker.add(SRS_BOOKMARKS.add_count_for_loop);
+
+                chunker.add(SRS_BOOKMARKS.highlight_digit,
                     (vis, i, lastBit) => {
                         if (i !== 0) {
                             unhighlight(vis.array, i - 1);
@@ -106,13 +126,13 @@ export default {
                 count[bit]++;
 
                 chunker.add(SRS_BOOKMARKS.add_to_count,
-                    (vis, count) => {
+                    (vis, count, bit) => {
                         if (isCountExpanded()) {
-                            setArray(vis.countArray, count);
+                            setArray(vis.countArray, count, true);
                             highlight(vis.countArray, bit);
                         }
                     },
-                    [count]
+                    [count, bit]
                 );
 
                 lastBit = bit;
@@ -132,8 +152,12 @@ export default {
             for (let i = 1; i < count.length; i++) {
                 chunker.add(SRS_BOOKMARKS.cum_sum_for_loop,
                     (vis, i) => {
-                        if (i === 1 && isCountExpanded()) {
-                            highlight(vis.countArray, 0);
+                        if (isCountExpanded()) {
+                            if (i !== 1) {
+                                unhighlight(vis.countArray, i - 1);
+                            }
+
+                            highlight(vis.countArray, i);
                         }
                     },
                     [i]
@@ -144,7 +168,7 @@ export default {
                 chunker.add(SRS_BOOKMARKS.add_cum_sum,
                     (vis, count, i) => {
                         if (isCountExpanded()) {
-                            setArray(vis.countArray, count);
+                            setArray(vis.countArray, count, true);
                             highlight(vis.countArray, i);
                         }
                     },
@@ -152,7 +176,7 @@ export default {
                 )
             }
 
-            const sortedA = Array.apply(null, Array(n)).map(() => 0);
+            const sortedA = Array.apply(null, Array(n)).map(() => undefined);
 
             chunker.add(SRS_BOOKMARKS.populate_array,
                 (vis, countLength) => {
@@ -169,26 +193,43 @@ export default {
 
             for (let i = n - 1; i >= 0; i--) {
                 const num = A[i];
+                A_copy[i] = undefined;
                 bit = bitsAtIndex(num, k, bits);
                 count[bit]--;
                 sortedA[count[bit]] = num;
-                chunker.add(SRS_BOOKMARKS.insert_into_array,
-                    (vis, num, i, bit, count, sortedA) => {
+
+                chunker.add(SRS_BOOKMARKS.highlight_digit_count,
+                    (vis, num, i) => {
                         if (i !== n - 1) {
                             unhighlight(vis.array, i + 1);
-                        }
-
-                        if (isCountExpanded()) {
-                            setArray(vis.countArray, count);
-                            setArray(vis.tempArray, sortedA);
-                            highlight(vis.countArray, bit);
-                            highlight(vis.tempArray, count[bit]);
                         }
 
                         updateBinary(vis, num);
                         highlight(vis.array, i);
                     },
-                    [num, i, bit, count, sortedA]
+                    [num, i]
+                );
+
+                chunker.add(SRS_BOOKMARKS.subtract_count,
+                    (vis, count, bit) => {
+                        if (isCountExpanded()) {
+                            setArray(vis.countArray, count, true);
+                            highlight(vis.countArray, bit);
+                        }
+                    },
+                    [count, bit]
+                );
+
+                chunker.add(SRS_BOOKMARKS.insert_into_array,
+                    (vis, bit, count, sortedA, A_copy) => {
+                        if (isCountExpanded()) {
+                            setArray(vis.tempArray, sortedA);
+                            highlight(vis.tempArray, count[bit]);
+                        }
+
+                        setArray(vis.array, A_copy);
+                    },
+                    [bit, count, sortedA, A_copy]
                 );
             }
 
@@ -198,7 +239,7 @@ export default {
 
                     if (isCountExpanded()) {
                         setArray(vis.tempArray, Array.apply(null, Array(n)).map(() => undefined));
-                        setArray(vis.countArray, Array.apply(null, Array(countLength)).map(() => undefined));
+                        setArray(vis.countArray, Array.apply(null, Array(countLength)).map(() => undefined), true);
                     }
                 },
                 [sortedA, n, count.length]
@@ -208,7 +249,7 @@ export default {
         };
 
         let maxNumber = Math.max(...A);
-        let maxBit = -1;
+        let maxBit = 0;
 
         while (maxNumber > 0) {
             maxNumber = Math.floor(maxNumber / 2);
@@ -226,7 +267,7 @@ export default {
                 setArray(vis.array, array);
 
                 if (isCountExpanded()) {
-                    setArray(vis.countArray, Array.apply(null, Array(1 << BITS)).map(() => undefined));
+                    setArray(vis.countArray, Array.apply(null, Array(1 << BITS)).map(() => undefined), true);
                     setArray(vis.tempArray, Array.apply(null, Array(n)).map(() => undefined));
                 }
             },
@@ -273,15 +314,15 @@ export function initVisualisers() {
                 order: 0,
             },
             array: {
-                instance: new ArrayTracer('array', null, 'Array view', { arrayItemMagnitudes: false }),
+                instance: new ArrayTracer('array', null, 'Array A', { arrayItemMagnitudes: false }),
                 order: 1,
             },
             countArray: {
-                instance: new ArrayTracer('countArray', null, 'Count array', { arrayItemMagnitudes: false }),
+                instance: new ArrayTracer('countArray', null, 'Count array C', { arrayItemMagnitudes: false }),
                 order: 1,
             },
             tempArray: {
-                instance: new ArrayTracer('tempArray', null, 'Temp array', { arrayItemMagnitudes: false }),
+                instance: new ArrayTracer('tempArray', null, 'Temp array B', { arrayItemMagnitudes: false }),
                 order: 1,
             },
         };
@@ -292,7 +333,7 @@ export function initVisualisers() {
                 order: 0,
             },
             array: {
-                instance: new ArrayTracer('array', null, 'Array view', { arrayItemMagnitudes: true }),
+                instance: new ArrayTracer('array', null, 'Array A', { arrayItemMagnitudes: true }),
                 order: 1,
             },
         };
