@@ -253,11 +253,8 @@ export default {
 
         while (maxNumber > 0) {
             maxNumber = Math.floor(maxNumber / 2);
-            console.log(maxNumber);
             maxBit++;
         }
-
-        console.log(maxBit);
 
         let bits = 1;
 
