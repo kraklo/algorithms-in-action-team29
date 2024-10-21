@@ -249,12 +249,15 @@ export default {
         };
 
         let maxNumber = Math.max(...A);
-        let maxBit = -1;
+        let maxBit = 0;
 
         while (maxNumber > 0) {
             maxNumber = Math.floor(maxNumber / 2);
+            console.log(maxNumber);
             maxBit++;
         }
+
+        console.log(maxBit);
 
         let bits = 1;
 
